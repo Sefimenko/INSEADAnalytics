@@ -41,6 +41,7 @@ We download daily prices (open, high, low, close, and adjusted close) and volume
 ```{r eval = TRUE, echo=TRUE, error = FALSE, warning=FALSE,message=FALSE,results='asis'}
 source("helpersSet1.R")
 source("dataSet1.R")
+library(shiny)
 ```
 
 For more information on downloading finance data from the internet as well as on finance related R tools see these starting points (there is a lot more of course available):
@@ -56,10 +57,10 @@ For more information on downloading finance data from the internet as well as on
 #### Optional Question 
 
 1. Can you find some interesting finance related R package or github repository? 
+
 **Your Answers here:**
-**I downloaded basic R package with called _jrvFinance_ that implements the basic financial analysis functions similar to (but not identical to) what is available in most spreadsheet software. Why? Because given all advantages of R language I still doubt how it can be used for sophisticated financial modelling of companies.**
-<br>
-<br>
+
+I downloaded basic R package with called _jrvFinance_ that implements the basic financial analysis functions similar to (but not identical to) what is available in most spreadsheet software.
 
 <hr>
 <hr>
@@ -86,11 +87,16 @@ pnl_plot(SPY)
 3. *(Extra points)* What if we want to also see the returns of another company, say Yahoo!, in the same period? Can you get that data and report the statistics for Yahoo!'s stock, too? 
 
 **Your Answers here:**
-1. It is done in dataSet1.R file in lines 11-18
 
+1. It is done in dataSet1.R file in lines 11-18
 2. The cumulative returns of the Apple stock during this period is `r round(100*sum(StockReturns[,"AAPL"]),1)`%. The average daily returns of the Apple stock during this period is `r round(100*mean(StockReturns[,"AAPL"]),3)`%. The standard deviation of the daily returns of the Apple stock during this period is `r round(100*sd(StockReturns[,"AAPL"]),3)`%;
 <br>
 3. The cumulative returns of the Yahoo! stock during this period is `r round(100*sum(StockReturns[,"YHOO"]),1)`%. The average daily returns of the Yahoo! stock during this period is `r round(100*mean(StockReturns[,"YHOO"]),3)`%. The standard deviation of the daily returns of the Yahoo! stock during this period is `r round(100*sd(StockReturns[,"YHOO"]),3)`%;
+
+```{r echo=FALSE, comment=NA, warning=FALSE, message=FALSE,results='asis',fig.align='center', fig.height=4,fig.width= 6, fig=TRUE}
+YHOO = StockReturns[,"YHOO"]
+pnl_plot(YHOO)
+```
 
 <hr>
 <hr>
@@ -129,11 +135,13 @@ We can also transpose the matrix of returns to create a new "horizontal" matrix.
 
 **Your Answers here:**
 
-1. nrow(transposedData)
-
+1. nrow(transposedData), ncol(transposedData)
+2. Here is a plot of returns for portfolio with S&P and Apple (excluding Yahoo that was previously included in StockReturns): 
 ```{r echo=FALSE, comment=NA, warning=FALSE, message=FALSE,results='asis',fig.align='center', fig=TRUE}
-portfolio = apply(StockReturns,1,mean)
-names(portfolio) <- rownames(StockReturns)
+transposedData = t(StockReturns)
+transposedData1 = transposedData[c(1:2),] # I create average portfolio fo just S&P and Apple excluding Yahoo!
+portfolio = apply(transposedData1,2,mean)
+names(portfolio) <- colnames(transposedData1)
 pnl_plot(portfolio)
 ```
 
@@ -150,41 +158,8 @@ This is an important step and will get you to think about the overall process on
 2. *(Extra Exercise)*  Can you get the returns of a few companies and plot the returns of an equal weighted portfolio with those companies during some period you select? 
 
 **Your Answers here:**
-1. I need to change startDate = "2005-01-01" to "2001-01-01"
+1. I need to change startDate = "2005-01-01" to "2001-01-01" in dataSet.R
 
-<br>
-<br>
-<br>
-
-<hr>
-<hr>
-
-###  Part IV: Read/Write .CSV files
-
-Finally, one can read and write data in .CSV files. For example, we can save the first 20 days of data for S&P and Apple in a file using the command:
-
-```{r eval = TRUE, echo=TRUE, comment=NA, warning=FALSE, message=FALSE,results='asis'}
-write.csv(StockReturns[1:20,c("SPY","AAPL")], file = "twentydays.csv", row.names = TRUE, col.names = TRUE) 
-```
-
-Do not get surpsised if you see the csv file in your directories suddenly! You can then read the data from the csv file using the read.csv command. For example, this will load the data from the csv file and save it in a new variable that now is called "myData": 
-
-```{r eval = TRUE, echo=TRUE, comment=NA, warning=FALSE, message=FALSE,results='asis'}
-myData <- read.csv(file = "twentydays.csv", header = TRUE, sep=";")
-```
-
-Try it!
-
-#### Questions
-
-1. Once you write and read the data as described above, what happens when you run this command in the console of the RStudio: `sum(myData != StockReturns[1:20,])`
-2. *(Extra exercise)* What do you think will happen if you now run this command, and why:  
-
-```{r eval = FALSE, echo=TRUE}
-myData + StockReturns[1:40,])
-```
-
-**Your Answers here:**
 <br>
 <br>
 <br>
@@ -202,7 +177,7 @@ Can you now load another dataset from some CSV file and report some basic statis
 ### Creating Interactive Documents
 
 Finally, just for fun, one can add some interactivity in the report using [Shiny](http://rmarkdown.rstudio.com/authoring_shiny.html).All one needs to do is set the eval flag of the code chunk below (see the .Rmd file) to "TRUE", add the line "runtime: shiny" at the very begining of the .Rmd file, make the markdown output to be "html_document", and then press "Run Document". 
-
+ 
 ```{r, eval=FALSE, echo = TRUE}
 sliderInput("startdate", "Starting Date:", min = 1, max = length(portfolio), 
             value = 1)
